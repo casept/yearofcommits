@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/getlantern/systray"
-	"github.com/getlantern/systray/example/icon"
+	"github.com/plutov/yearofcommits/icon"
 )
 
 func main() {
@@ -14,7 +14,7 @@ func main() {
 
 func onReady() {
 	systray.SetIcon(icon.Data)
-	//systray.SetTitle("Awesome App")
+	systray.SetTitle("100")
 	mQuit := systray.AddMenuItem("Quit", "Quit program")
 	go func() {
 		<-mQuit.ClickedCh
