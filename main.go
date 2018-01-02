@@ -59,8 +59,9 @@ func updateCounter(ctx context.Context, client *github.Client, user string) {
 	yearAgo := time.Now().AddDate(-1, 0, 0)
 
 	commitsOpts := &github.CommitsListOptions{
-		Since: yearAgo,
-		Until: today,
+		Author: user,
+		Since:  yearAgo,
+		Until:  today,
 	}
 
 	// date -> count of commits map
