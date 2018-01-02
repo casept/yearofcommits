@@ -1,5 +1,5 @@
-config.yml
 vendor
+yearofcommits
 
 # Binaries for programs and plugins
 *.exe

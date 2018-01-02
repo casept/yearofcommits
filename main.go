@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"time"
 
@@ -11,14 +11,7 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/plutov/yearofcommits/icon"
 	"golang.org/x/oauth2"
-	"gopkg.in/yaml.v2"
 )
-
-// Config Go representation
-type Config struct {
-	User  string `yaml:"user"`
-	Token string `yaml:"token"`
-}
 
 const dateFormat = "2016-01-02"
 
@@ -36,34 +29,27 @@ func onReady() {
 	}()
 
 	go func() {
-		ymlFile, err := ioutil.ReadFile("config.yml")
-		if err != nil {
-			log.Fatalf("unable to open config.yml: %v", err)
-		}
-
-		cfg := new(Config)
-		err = yaml.Unmarshal([]byte(ymlFile), &cfg)
-		if err != nil {
-			log.Fatalf("unable to parse config: %v", err)
-		}
+		user := flag.String("u", "", "GitHub username")
+		token := flag.String("t", "", "GitHub API token")
+		flag.Parse()
 
 		ctx := context.Background()
 		ts := oauth2.StaticTokenSource(
-			&oauth2.Token{AccessToken: cfg.Token},
+			&oauth2.Token{AccessToken: *token},
 		)
 		tc := oauth2.NewClient(ctx, ts)
 		c := github.NewClient(tc)
 
 		// Check github stats every hour
-		updateCounter(ctx, c, cfg)
+		updateCounter(ctx, c, *user)
 		for range time.Tick(time.Hour) {
-			updateCounter(ctx, c, cfg)
+			updateCounter(ctx, c, *user)
 		}
 	}()
 }
 
-func updateCounter(ctx context.Context, client *github.Client, cfg *Config) {
-	repos, _, reposErr := client.Repositories.List(ctx, cfg.User, nil)
+func updateCounter(ctx context.Context, client *github.Client, user string) {
+	repos, _, reposErr := client.Repositories.List(ctx, user, nil)
 	if reposErr != nil {
 		log.Printf("unable to get repos: %v", reposErr)
 		return
@@ -81,7 +67,7 @@ func updateCounter(ctx context.Context, client *github.Client, cfg *Config) {
 	dateCountMap := make(map[string]int)
 
 	for _, repo := range repos {
-		commits, _, commitsErr := client.Repositories.ListCommits(ctx, cfg.User, repo.GetName(), commitsOpts)
+		commits, _, commitsErr := client.Repositories.ListCommits(ctx, user, repo.GetName(), commitsOpts)
 		if commitsErr != nil {
 			log.Printf("unable to get commits of %s: %v", repo.GetName(), commitsErr)
 			continue
