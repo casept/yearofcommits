@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/getlantern/systray"
@@ -32,6 +33,11 @@ func onReady() {
 		user := flag.String("u", "", "GitHub username")
 		token := flag.String("t", "", "GitHub API token")
 		flag.Parse()
+		if *user == "" || *token == "" {
+			fmt.Println("Usage: yearofcommits -u github-username -t github-api-token")
+			systray.Quit()
+			os.Exit(0)
+		}
 
 		ctx := context.Background()
 		ts := oauth2.StaticTokenSource(
